@@ -241,11 +241,12 @@ export class BlockDragger implements IBlockDragger {
    */
   private moveBlock(draggingBlock: BlockSvg, dragDelta: Coordinate) {
     const delta = this.pixelsToWorkspaceUnits_(dragDelta);
-    const newLoc = Coordinate.sum(this.startXY_, delta);
-    draggingBlock.moveDuringDrag(newLoc);
 
     // TODO: move to moveDuringDrag
     this.dragNodes_(delta);
+
+    const newLoc = Coordinate.sum(this.startXY_, delta);
+    draggingBlock.moveDuringDrag(newLoc);
   }
 
   private updateDragTargets(e: PointerEvent, draggingBlock: BlockSvg) {
