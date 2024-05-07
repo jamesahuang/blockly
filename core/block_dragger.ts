@@ -469,6 +469,8 @@ export class BlockDragger implements IBlockDragger {
     this.workspace_.setResizesEnabled(true);
 
     eventUtils.setGroup(false);
+
+    this.behaviorOrderManager_.update();
   }
 
   /**
@@ -496,7 +498,6 @@ export class BlockDragger implements IBlockDragger {
       );
     }
     this.dragArrowlineData_ = [];
-    this.behaviorOrderManager_.update();
   }
 
   /**
