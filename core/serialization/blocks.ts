@@ -28,6 +28,7 @@ import {
 } from './exceptions.js';
 import * as priorities from './priorities.js';
 import * as serializationRegistry from './registry.js';
+import { BtNodeType } from '../bt_node_type.js';
 
 // TODO(#5160): Remove this once lint is fixed.
 /* eslint-disable no-use-before-define */
@@ -52,6 +53,8 @@ export interface State {
   deletable?: boolean;
   movable?: boolean;
   editable?: boolean;
+  btNodeType?: BtNodeType;
+  btWrapNodeType?: BtNodeType;
   enabled?: boolean;
   inline?: boolean;
   data?: string;
@@ -156,6 +159,12 @@ export function save(
 function saveAttributes(block: Block, state: State) {
   if (block.isCollapsed()) {
     state['collapsed'] = true;
+  }
+  if (block.getBtNodeType()) {
+    state['btNodeType'] = block.getBtNodeType() as BtNodeType;
+  }
+  if (block.getBtWrapNodeType()) {
+    state['btWrapNodeType'] = block.getBtWrapNodeType() as BtNodeType;
   }
   if (!block.isEnabled()) {
     state['enabled'] = false;
@@ -509,6 +518,12 @@ function loadCoords(block: Block, state: State) {
 function loadAttributes(block: Block, state: State) {
   if (state['collapsed']) {
     block.setCollapsed(true);
+  }
+  if (state['btNodeType']) {
+    block.setBtNodeType(state['btNodeType']);
+  }
+  if (state['btWrapNodeType']) {
+    block.setBtWrapNodeType(state['btWrapNodeType']);
   }
   if (state['deletable'] === false) {
     block.setDeletable(false);

@@ -167,6 +167,12 @@ export class BlockChange extends BlockBase {
       case 'collapsed':
         block.setCollapsed(!!value);
         break;
+      case 'btNodeType':
+        block.setBtNodeType(value as string);
+        break;
+      case 'btWrapNodeType':
+        block.setBtWrapNodeType((value as string) || null);
+        break;
       case 'disabled':
         block.setEnabled(!value);
         break;

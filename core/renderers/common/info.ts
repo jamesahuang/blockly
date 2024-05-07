@@ -39,6 +39,9 @@ import type {ConstantProvider} from './constants.js';
 import type {Renderer} from './renderer.js';
 import {Connection} from '../measurables/connection.js';
 
+import {BtBaseNodeIcon} from '../../icons.js';
+
+
 /**
  * An object containing all sizing information needed to draw this block.
  *
@@ -398,6 +401,13 @@ export class RenderInfo {
         continue;
       }
       for (let e = 0; e < oldElems.length - 1; e++) {
+        if (Types.isIcon(oldElems[e])) {
+          const icon = oldElems[e] as Icon;
+          if (icon.icon instanceof BtBaseNodeIcon) {
+            row.elements.push(new InRowSpacer(this.constants_, icon.icon.getSize().width / 2));
+            continue;
+          }
+        }
         row.elements.push(oldElems[e]);
         const spacing = this.getInRowSpacing_(oldElems[e], oldElems[e + 1]);
         row.elements.push(new InRowSpacer(this.constants_, spacing));
@@ -502,6 +512,10 @@ export class RenderInfo {
       this.startX = this.outputConnection.width;
       this.width += this.outputConnection.width;
       this.widthWithChildren += this.outputConnection.width;
+    }
+
+    if (this.block_.statementInputCount > 0) {
+      this.width = Math.max(this.width, widestRowWithConnectedBlocks - this.statementEdge);
     }
   }
 

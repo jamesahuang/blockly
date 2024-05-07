@@ -36,6 +36,8 @@ import {WorkspaceCommentSvg} from './workspace_comment_svg.js';
 import {WorkspaceDragger} from './workspace_dragger.js';
 import type {WorkspaceSvg} from './workspace_svg.js';
 import type {IIcon} from './interfaces/i_icon.js';
+import { IconType } from './icons.js';
+import { BtBaseNodeIcon } from './icons/bt_base_node_icon.js';
 
 /**
  * Note: In this file "start" refers to pointerdown
@@ -208,6 +210,8 @@ export class Gesture {
       browserEvents.unbind(event);
     }
     this.boundEvents.length = 0;
+
+    this.disposeBtNode();
 
     if (this.blockDragger) {
       this.blockDragger.dispose();
@@ -412,6 +416,9 @@ export class Gesture {
       this.targetBlock,
       this.startWorkspace_,
     );
+    if (this.targetBlock?.getSurroundParent()?.isBtWrapper()) {
+      this.healStack = true;
+    }
     this.blockDragger!.startDrag(this.currentDragDeltaXY, this.healStack);
     this.blockDragger!.drag(this.mostRecentEvent, this.currentDragDeltaXY);
   }
@@ -625,6 +632,7 @@ export class Gesture {
       // not matter, because the three types of dragging are exclusive.
       if (this.bubbleDragger) {
         this.bubbleDragger.endBubbleDrag(e, this.currentDragDeltaXY);
+        this.disposeBtNode();
       } else if (this.blockDragger) {
         this.blockDragger.endDrag(e, this.currentDragDeltaXY);
       } else if (this.workspaceDragger) {
@@ -651,6 +659,18 @@ export class Gesture {
       e.stopPropagation();
 
       this.dispose();
+    }
+  }
+
+  disposeBtNode() {
+    if (
+      this.startIcon?.getType() === IconType.LBT_NODE ||
+      this.startIcon?.getType() === IconType.RBT_NODE
+    ) {
+      const wi = this.startIcon as BtBaseNodeIcon;
+      if (wi.bubbleIsVisible()) {
+        wi.setBubbleVisible(false);
+      }
     }
   }
 

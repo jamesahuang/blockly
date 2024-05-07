@@ -54,6 +54,11 @@ const defaultBlockStyles = {
     'colourSecondary': '#FF8000',
     'colourTertiary': '#DB6E00',
   },
+  'bt_blocks': {
+    'colourPrimary': '#808080',
+    'colourSecondary': '808080',
+    'colourTertiary': '#808080',
+  },
   'hat_blocks': {
     'colourPrimary': '#4C97FF',
     'colourSecondary': '#4280D7',

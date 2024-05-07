@@ -88,6 +88,7 @@ let content = `
 }
 
 .blocklyBlockCanvas.blocklyCanvasTransitioning,
+.blocklyBtNodeCanvas.blocklyCanvasTransitioning,
 .blocklyBubbleCanvas.blocklyCanvasTransitioning {
   transition: transform .5s;
 }

@@ -15,6 +15,7 @@ import * as procedures from './procedures.js';
 import * as texts from './text.js';
 import * as variables from './variables.js';
 import * as variablesDynamic from './variables_dynamic.js';
+import * as behavior from './behavior.js';
 import type {BlockDefinition} from '../core/blocks.js';
 
 export {
@@ -44,4 +45,5 @@ export const blocks: {[key: string]: BlockDefinition} = Object.assign(
   texts.blocks,
   variables.blocks,
   variablesDynamic.blocks,
+  behavior.blocks,
 );

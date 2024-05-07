@@ -38,6 +38,8 @@ import {IDeleteArea} from './interfaces/i_delete_area.js';
 import {Connection} from './connection.js';
 import {Block} from './block.js';
 import {finishQueuedRenders} from './render_management.js';
+import { WorkspaceArrowlineSvg } from './workspace_arrowline_svg.js';
+import { BehaviorOrderManager } from './behavior_order_manager.js';
 
 /** Represents a nearby valid connection. */
 interface ConnectionCandidate {
@@ -60,6 +62,9 @@ export class BlockDragger implements IBlockDragger {
   protected draggingBlock_: BlockSvg;
 
   protected connectionPreviewer: IConnectionPreviewer;
+
+  /** Manager for ordering behaviors during block move operation. */
+  protected behaviorOrderManager_: BehaviorOrderManager;
 
   /** The workspace on which the block is being dragged. */
   protected workspace_: WorkspaceSvg;
@@ -89,6 +94,8 @@ export class BlockDragger implements IBlockDragger {
    */
   protected dragIconData_: IconPositionData[] = [];
 
+  protected dragArrowlineData_: ArrowlineData[];
+
   /**
    * @param block The block to drag.
    * @param workspace The workspace to drag on.
@@ -102,6 +109,9 @@ export class BlockDragger implements IBlockDragger {
       this.workspace_.options,
     );
     this.connectionPreviewer = new previewerConstructor!(block);
+    this.behaviorOrderManager_ = new BehaviorOrderManager(
+      this.draggingBlock_,
+    );
 
     /**
      * The location of the top left corner of the dragging block at the
@@ -110,6 +120,8 @@ export class BlockDragger implements IBlockDragger {
     this.startXY_ = this.draggingBlock_.getRelativeToSurfaceXY();
 
     this.dragIconData_ = initIconData(block, this.startXY_);
+
+    this.dragArrowlineData_ = initArrowlineData(block);
   }
 
   /**
@@ -119,6 +131,7 @@ export class BlockDragger implements IBlockDragger {
    */
   dispose() {
     this.dragIconData_.length = 0;
+    this.dragArrowlineData_.length = 0;
     this.connectionPreviewer.dispose();
   }
 
@@ -230,6 +243,9 @@ export class BlockDragger implements IBlockDragger {
     const delta = this.pixelsToWorkspaceUnits_(dragDelta);
     const newLoc = Coordinate.sum(this.startXY_, delta);
     draggingBlock.moveDuringDrag(newLoc);
+
+    // TODO: move to moveDuringDrag
+    this.dragNodes_(delta);
   }
 
   private updateDragTargets(e: PointerEvent, draggingBlock: BlockSvg) {
@@ -479,6 +495,8 @@ export class BlockDragger implements IBlockDragger {
         this.draggingBlock_,
       );
     }
+    this.dragArrowlineData_ = [];
+    this.behaviorOrderManager_.update();
   }
 
   /**
@@ -512,6 +530,7 @@ export class BlockDragger implements IBlockDragger {
     if (this.wouldDeleteBlock_) {
       // Fire a move event, so we know where to go back to for an undo.
       this.fireMoveEvent_();
+      this.removeNodeLines();
       this.draggingBlock_.dispose(false, true);
       common.draggingConnections.length = 0;
       return true;
@@ -651,6 +670,18 @@ export class BlockDragger implements IBlockDragger {
   protected dragIcons_() {
     deprecation.warn('Blockly.BlockDragger.prototype.dragIcons_', 'v10', 'v11');
   }
+  protected dragNodes_(dxy: Coordinate) {
+    this.dragArrowlineData_.forEach(({line}) => {
+      (line as WorkspaceArrowlineSvg).translate(this.draggingBlock_.id, dxy);
+    });
+  }
+
+  protected removeNodeLines() {
+    this.dragArrowlineData_.forEach(({line}) => {
+      line.dispose();
+    });
+    this.dragArrowlineData_ = [];
+  }
 
   /**
    * Get a list of the insertion markers that currently exist.  Drags have 0, 1,
@@ -669,6 +700,10 @@ export class BlockDragger implements IBlockDragger {
 export interface IconPositionData {
   location: Coordinate;
   icon: Icon;
+}
+
+export interface ArrowlineData {
+  line: WorkspaceArrowlineSvg;
 }
 
 /**
@@ -703,6 +738,21 @@ function initIconData(
   // AnyDuringMigration because:  Type '{ location: Coordinate | null; icon:
   // Icon; }[]' is not assignable to type 'IconPositionData[]'.
   return dragIconData as AnyDuringMigration;
+}
+
+function initArrowlineData(
+  block: BlockSvg,
+): ArrowlineData[] {
+  // Build a list of icons that need to be moved and where they started.
+  const dragArrowlineData = [];
+
+  for (const arrowline of block.workspace.getBottomArrowlines()) {
+    if (arrowline.isConnecting(block.id)) {
+      dragArrowlineData.push({line: arrowline as WorkspaceArrowlineSvg});
+    }
+  }
+
+  return dragArrowlineData;
 }
 
 registry.register(registry.Type.BLOCK_DRAGGER, registry.DEFAULT, BlockDragger);

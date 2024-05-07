@@ -222,6 +222,7 @@ import {WorkspaceDragger} from './workspace_dragger.js';
 import {WorkspaceSvg} from './workspace_svg.js';
 import * as Xml from './xml.js';
 import {ZoomControls} from './zoom_controls.js';
+import {BtNodeType, BtNodeTypes} from './bt_node_type.js';
 
 /**
  * Blockly core version.
@@ -658,3 +659,5 @@ export {inject};
 /** @deprecated Use Blockly.inputs.inputTypes instead. To be removed in v11. */
 export {inputTypes};
 export {serialization};
+/** behavior tree */
+export {BtNodeType, BtNodeTypes};

@@ -1289,9 +1289,20 @@ export abstract class Flyout
     targetWorkspace.setResizesEnabled(false);
     const block = blocks.append(json, targetWorkspace) as BlockSvg;
 
-    this.positionNewBlock(oldBlock, block);
+    let targetBlock = block;    
+    if (block.isBtNode()) {      
+      const wrapBlock = targetWorkspace.newBlock('behavior_wrapper');
+      wrapBlock.setBtWrapNodeType(block.getBtNodeType());
+      wrapBlock.initSvg();
+      wrapBlock.render();
+      wrapBlock.getInput('DO')?.connection?.connect(block.previousConnection);
 
-    return block;
+      targetBlock = wrapBlock;
+    }
+
+    this.positionNewBlock(oldBlock, targetBlock);
+
+    return targetBlock;
   }
 
   /**

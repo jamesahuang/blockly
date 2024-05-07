@@ -41,6 +41,10 @@ export class ConnectionChecker implements IConnectionChecker {
     isDragging: boolean,
     opt_distance?: number,
   ): boolean {
+    if (a?.targetBlock()?.isBtTopNodeOrWrapper() || b?.targetBlock()?.isBtTopNodeOrWrapper()) {
+      return false;
+    } 
+
     return (
       this.canConnectWithReason(a, b, isDragging, opt_distance) ===
       Connection.CAN_CONNECT

@@ -62,6 +62,8 @@ import * as renderManagement from './render_management.js';
 import * as deprecation from './utils/deprecation.js';
 import {IconType} from './icons/icon_types.js';
 import {BlockCopyData, BlockPaster} from './clipboard/block_paster.js';
+import { BtLeftNodeIcon, BtRightNodeIcon, BtOrderIcon } from './icons.js';
+import { BtNodeTypes } from './bt_node_type.js';
 
 /**
  * Class for a block's SVG representation.
@@ -121,6 +123,13 @@ export class BlockSvg
    * @deprecated Use `setWarningText` to modify warnings on this block.
    */
   warning: WarningIcon | null = null;
+
+  /**
+   * behavior tree dragger
+   */
+  lbtNode: BtLeftNodeIcon | null = null;
+  rbtNode: BtRightNodeIcon | null = null;
+  btOrder: BtOrderIcon | null = null;
 
   private svgGroup_: SVGGElement;
   style: BlockStyle;
@@ -226,6 +235,33 @@ export class BlockSvg
 
     if (!svg.parentNode) {
       this.workspace.getCanvas().appendChild(svg);
+    }
+
+    if (this.isBtWrapper()) {
+      this.pathObject.setSelectAsBBox(true);
+    }
+
+    // TODO: 这里要知道是上下连接类型，才能显示order。连接信息有延迟，看有没有别的标识
+    setTimeout(() => {      
+      const order  = BtNodeTypes.isTop(this.getBtNodeType()) ? 1 : null;
+      this.setNodeOrder(order);
+    }, 0);
+  }
+
+  showNodeDragger() {
+    if (!this.isBtWrapper()) {
+      return;
+    }
+    const warpType = this.getBtWrapNodeType();
+    const rightOnly = BtNodeTypes.isTop(warpType);
+    const leftOnly = BtNodeTypes.isLeft(warpType);
+    
+    if (!this.getIcon(BtLeftNodeIcon.TYPE)) {
+      this.addIcon(new BtLeftNodeIcon(this).setActive(!rightOnly));
+    }
+
+    if (!this.getIcon(BtRightNodeIcon.TYPE)) {
+      this.addIcon(new BtRightNodeIcon(this).setActive(!leftOnly));
     }
   }
 
@@ -606,6 +642,11 @@ export class BlockSvg
   private onMouseDown_(e: PointerEvent) {
     const gesture = this.workspace.getGesture(e);
     if (gesture) {
+      const target = (this.isShadow() && this.parentBlock_?.isBtNode()) ? this.parentBlock_ : this;
+      if (target.isBtNode() && target.getSurroundParent()?.isBtWrapper()) {
+        gesture.handleBlockStart(e, target.getSurroundParent() as BlockSvg);
+        return;
+      }
       gesture.handleBlockStart(e, this);
     }
   }
@@ -1009,6 +1050,28 @@ export class BlockSvg
   }
 
   /**
+   * Set this block's order.
+   *
+   * @param order The order, or null to delete.
+   */
+  override setNodeOrder(order: number | null) {
+    if (this.isBtWrapper() || this.isInFlyout) {
+      return;
+    }
+
+    if (this.outputConnection) {
+      return;
+    }    
+    
+    const icon = this.getIcon(BtOrderIcon.TYPE) as BtOrderIcon | undefined;
+    if (icon) {
+      (icon as BtOrderIcon).setOrder(order);
+    } else {
+      this.addIcon(new BtOrderIcon(this).setOrder(order));
+    }
+  }
+
+  /**
    * Give this block a mutator dialog.
    *
    * @param mutator A mutator dialog instance or null to remove.
@@ -1023,6 +1086,9 @@ export class BlockSvg
 
     if (icon instanceof WarningIcon) this.warning = icon;
     if (icon instanceof MutatorIcon) this.mutator = icon;
+    if (icon instanceof BtLeftNodeIcon) this.lbtNode = icon;
+    if (icon instanceof BtRightNodeIcon) this.rbtNode = icon;
+    if (icon instanceof BtOrderIcon) this.btOrder = icon;
 
     if (this.rendered) {
       icon.initView(this.createIconPointerDownListener(icon));

@@ -33,6 +33,7 @@ import type {VariableModel} from './variable_model.js';
 import type {WorkspaceComment} from './workspace_comment.js';
 import {IProcedureMap} from './interfaces/i_procedure_map.js';
 import {ObservableProcedureMap} from './observable_procedure_map.js';
+import { WorkspaceArrowline } from './workspace_arrowline.js';
 
 /**
  * Class for a workspace.  This is a data structure that contains blocks.
@@ -102,6 +103,8 @@ export class Workspace implements IASTNodeLocation {
   private readonly topBlocks: Block[] = [];
   private readonly topComments: WorkspaceComment[] = [];
   private readonly commentDB = new Map<string, WorkspaceComment>();
+  private readonly bottomArrowlines: WorkspaceArrowline[] = [];
+  private readonly arrowlineDB = new Map<string, WorkspaceArrowline>();
   private readonly listeners: Function[] = [];
   protected undoStack_: Abstract[] = [];
   protected redoStack_: Abstract[] = [];
@@ -313,6 +316,61 @@ export class Workspace implements IASTNodeLocation {
       comments.sort(this.sortObjects_.bind(this));
     }
     return comments;
+  }
+
+  /**
+   * Adds a comment to the list of top comments.
+   *
+   * @param line comment to add.
+   * @internal
+   */
+  addBottomArrowline(line: WorkspaceArrowline) {
+    this.bottomArrowlines.push(line);
+
+    // Note: If the comment database starts to hold block comments, this may
+    // need to move to a separate function.
+    if (this.arrowlineDB.has(line.id)) {
+      console.warn(
+        'Overriding an existing arrowline on this workspace, with id "' +
+          line.id +
+          '"',
+      );
+    }
+    this.arrowlineDB.set(line.id, line);
+  }
+
+  /**
+   * Removes a comment from the list of top comments.
+   *
+   * @param line comment to remove.
+   * @internal
+   */
+  removeBottomArrowline(line: WorkspaceArrowline) {
+    if (!arrayUtils.removeElem(this.bottomArrowlines, line)) {
+      throw Error(
+        "Arrowline not present in workspace's list of bottom-most " + 'arrowlines.',
+      );
+    }
+    // Note: If the comment database starts to hold block comments, this may
+    // need to move to a separate function.
+    this.arrowlineDB.delete(line.id);
+  }
+
+  /**
+   * Finds the top-level comments and returns them.  Comments are optionally
+   * sorted by position; top to bottom (with slight LTR or RTL bias).
+   *
+   * @param ordered Sort the list if true.
+   * @returns The top-level comment objects.
+   * @internal
+   */
+  getBottomArrowlines(_ordered = false): WorkspaceArrowline[] {
+    // Copy the topComments list.
+    const lines = new Array<WorkspaceArrowline>().concat(this.bottomArrowlines);
+    // if (_ordered && lines.length > 1) {
+      // TODO: 排序是否有场景
+    // }
+    return lines;
   }
 
   /**

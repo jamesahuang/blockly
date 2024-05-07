@@ -51,6 +51,7 @@ import {EndRowInput} from './inputs/end_row_input.js';
 import {ValueInput} from './inputs/value_input.js';
 import {StatementInput} from './inputs/statement_input.js';
 import {IconType} from './icons/icon_types.js';
+import { BtNodeType, BtNodeTypes } from './bt_node_type.js';
 
 /**
  * Class for one block.
@@ -185,6 +186,11 @@ export class Block implements IASTNodeLocation, IDeletable {
 
   protected collapsed_ = false;
   protected outputShape_: number | null = null;
+  /**
+   * 行为树节点类型
+   */
+  private btNodeType_: BtNodeType | null = null;
+  private btWrapNodeType_: BtNodeType | null = null;
 
   /**
    * Is the current block currently in the process of being disposed?
@@ -2255,6 +2261,14 @@ export class Block implements IASTNodeLocation, IDeletable {
     // NOOP.
   }
 
+  showNodeDragger() {
+    // NOOP.
+  }
+
+  setNodeOrder(_order: number | null) {
+    // NOOP.
+  }
+
   /**
    * Give this block a mutator dialog.
    *
@@ -2408,6 +2422,37 @@ export class Block implements IASTNodeLocation, IDeletable {
     }
     return msg;
   }
+  setBtNodeType(type: BtNodeType | string | null) {
+    this.btNodeType_ = type ? type as BtNodeType : null;
+  }
+
+  getBtNodeType(): BtNodeType | null {
+    return this.btNodeType_;
+  }
+
+  setBtWrapNodeType(type: BtNodeType | string | null) {
+    this.btWrapNodeType_ = type ? type as BtNodeType : null;
+  }
+
+  getBtWrapNodeType(): BtNodeType | null {
+    return this.btWrapNodeType_;
+  }
+
+  isBtNode(): boolean {
+    return BtNodeTypes.isNode(this.btNodeType_)
+      && !!this.previousConnection
+      && !this.nextConnection
+      && !this.outputConnection;
+  }
+
+  isBtWrapper(): boolean {
+    return BtNodeTypes.isNode(this.btWrapNodeType_);
+  }
+
+  isBtTopNodeOrWrapper(): boolean {
+    return BtNodeTypes.isTop(this.btWrapNodeType_) || BtNodeTypes.isTop(this.btNodeType_);
+  }
+
 }
 
 export namespace Block {

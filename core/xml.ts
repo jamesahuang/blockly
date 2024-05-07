@@ -247,6 +247,12 @@ export function blockToDom(
   if (block.isCollapsed()) {
     element.setAttribute('collapsed', 'true');
   }
+  if (block.getBtNodeType()) {
+    element.setAttribute('btNodeType', block.getBtNodeType() as string);
+  }
+  if (block.getBtWrapNodeType()) {
+    element.setAttribute('btWrapNodeType', block.getBtWrapNodeType() as string);
+  }
   if (!block.isEnabled()) {
     element.setAttribute('disabled', 'true');
   }
@@ -985,6 +991,14 @@ function domToBlockHeadless(
   const collapsed = xmlBlock.getAttribute('collapsed');
   if (collapsed) {
     block.setCollapsed(collapsed === 'true');
+  }
+  const btNodeType = xmlBlock.getAttribute('btNodeType');
+  if (btNodeType) {
+    block.setBtNodeType(btNodeType);
+  }
+  const btWrapNodeType = xmlBlock.getAttribute('btWrapNodeType');
+  if (btWrapNodeType) {
+    block.setBtWrapNodeType(btWrapNodeType);
   }
   if (xmlBlock.nodeName.toLowerCase() === 'shadow') {
     // Ensure all children are also shadows.

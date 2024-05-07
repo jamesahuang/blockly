@@ -59,6 +59,9 @@ export class PathObject extends BasePathObject {
 
   override setPath(pathString: string) {
     super.setPath(pathString);
+    if (this.updateSelectAsBBox()) {
+      return;
+    }
     if (this.svgPathSelected) {
       this.svgPathSelected.setAttribute('d', pathString);
     }
@@ -91,6 +94,7 @@ export class PathObject extends BasePathObject {
     if (enable) {
       if (!this.svgPathSelected) {
         this.svgPathSelected = this.svgPath.cloneNode(true) as SVGElement;
+        this.updateSelectAsBBox();
         this.svgPathSelected.setAttribute('fill', 'none');
         this.svgPathSelected.setAttribute(
           'filter',
@@ -132,6 +136,17 @@ export class PathObject extends BasePathObject {
     } else {
       outlinePath.removeAttribute('filter');
     }
+  }
+
+  private updateSelectAsBBox(): boolean {
+    if (!this.selectAsBBox || !this.svgPathSelected) {
+      return false;
+    }
+    
+    const rect = (this.svgPath as SVGGElement).getBBox();
+    const rectPath = `m${rect.x},${rect.y} l${rect.width},0  l0,${rect.height} l${-rect.width},0 z`;
+    this.svgPathSelected.setAttribute('d', rectPath);
+    return true;
   }
 
   /**

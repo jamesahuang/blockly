@@ -321,6 +321,8 @@ export class WorkspaceSvg extends Workspace implements IASTNodeLocationSvg {
   svgBlockCanvas_!: SVGElement;
   // TODO(b/109816955): remove '!', see go/strict-prop-init-fix.
   svgBubbleCanvas_!: SVGElement;
+  // TODO(b/109816955): remove '!', see go/strict-prop-init-fix.
+  svgBtNodeCanvas_!: SVGElement;
   zoomControls_: ZoomControls | null = null;
 
   /**
@@ -782,6 +784,13 @@ export class WorkspaceSvg extends Workspace implements IASTNodeLocationSvg {
     this.svgBlockCanvas_ = this.layerManager.getBlockLayer();
     this.svgBubbleCanvas_ = this.layerManager.getBubbleLayer();
 
+    // TODO: move to the layerManager.
+    this.svgBtNodeCanvas_ = dom.createSvgElement(
+      Svg.G,
+      {'class': 'blocklyBtNodeCanvas'},
+      this.svgGroup_,
+    );
+
     if (!this.isFlyout) {
       browserEvents.conditionalBind(
         this.svgGroup_,
@@ -1143,6 +1152,11 @@ export class WorkspaceSvg extends Workspace implements IASTNodeLocationSvg {
     return this.layerManager!.getBubbleLayer();
   }
 
+
+  getBtNodeCanvas(): SVGGElement {
+    return this.svgBtNodeCanvas_ as SVGGElement;
+  }
+
   /**
    * Get the SVG element that contains this workspace.
    * Note: We assume this is only called after the workspace has been injected
@@ -1208,6 +1222,11 @@ export class WorkspaceSvg extends Workspace implements IASTNodeLocationSvg {
    *     the Blockly div.
    */
   translate(x: number, y: number) {
+    // TODO: move to layerManager
+    const translation =
+      'translate(' + x + ',' + y + ') ' + 'scale(' + this.scale + ')';
+    this.svgBtNodeCanvas_.setAttribute('transform', translation);
+
     this.layerManager?.translateLayers(new Coordinate(x, y), this.scale);
     this.grid?.moveTo(x, y);
     this.maybeFireViewportChangeEvent();
@@ -2045,6 +2064,7 @@ export class WorkspaceSvg extends Workspace implements IASTNodeLocationSvg {
   beginCanvasTransition() {
     dom.addClass(this.getCanvas(), 'blocklyCanvasTransitioning');
     dom.addClass(this.getBubbleCanvas(), 'blocklyCanvasTransitioning');
+    dom.addClass(this.getBtNodeCanvas(), 'blocklyCanvasTransitioning');
   }
 
   /**
@@ -2055,6 +2075,7 @@ export class WorkspaceSvg extends Workspace implements IASTNodeLocationSvg {
   endCanvasTransition() {
     dom.removeClass(this.getCanvas(), 'blocklyCanvasTransitioning');
     dom.removeClass(this.getBubbleCanvas(), 'blocklyCanvasTransitioning');
+    dom.removeClass(this.getBtNodeCanvas(), 'blocklyCanvasTransitioning');
   }
 
   /** Center the workspace. */

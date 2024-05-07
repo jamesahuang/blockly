@@ -45,6 +45,8 @@ export class Svg<_T> {
   /** @internal */
   static FILTER = new Svg<SVGFilterElement>('filter');
   /** @internal */
+  static MARKER = new Svg<SVGMarkerElement>('marker');
+  /** @internal */
   static FOREIGNOBJECT = new Svg<SVGForeignObjectElement>('foreignObject');
   /** @internal */
   static G = new Svg<SVGGElement>('g');

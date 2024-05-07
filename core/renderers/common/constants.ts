@@ -316,6 +316,13 @@ export class ConstantProvider {
    * The <pattern> element to use for disabled blocks, or null if not set.
    */
   private disabledPattern: SVGElement | null = null;
+  
+  /**
+   * behaviorTree line arrow
+   */
+  ARROWLINE_MARKER_END_COLOUR = '#5af189';
+  lineArrowMarkerId = ''
+  private lineArrowMarker: SVGElement | null = null;
 
   /**
    * The ID of the debug filter, or the empty string if no pattern is set.
@@ -696,6 +703,9 @@ export class ConstantProvider {
     if (this.debugFilter) {
       dom.removeNode(this.debugFilter);
     }
+    if (this.lineArrowMarker) {
+      dom.removeNode(this.lineArrowMarker);
+    }
     this.cssNode = null;
   }
 
@@ -1029,6 +1039,28 @@ export class ConstantProvider {
     );
     this.disabledPatternId = disabledPattern.id;
     this.disabledPattern = disabledPattern;
+
+    const lineArrowMarker = dom.createSvgElement(
+      Svg.MARKER, {
+        'id': 'blocklyLineArrowMarker' + this.randomIdentifier,
+        orient:"auto",
+        markerWidth:'4',
+        markerHeight:'8',
+        refX:'2',
+        refY:'4'
+      },
+      this.defs,
+    );
+    dom.createSvgElement(
+      Svg.PATH,
+      {
+        'd': 'M0,0 V8 L4,4 Z',
+        'fill': this.ARROWLINE_MARKER_END_COLOUR
+      },
+      lineArrowMarker,
+    );
+    this.lineArrowMarkerId = lineArrowMarker.id;
+    this.lineArrowMarker = lineArrowMarker;
 
     this.createDebugFilter();
   }

@@ -40,6 +40,8 @@ export class PathObject implements IPathObject {
   constants: ConstantProvider;
   style: BlockStyle;
 
+  selectAsBBox: boolean = false;
+
   /** Highlight paths associated with connections. */
   private connectionHighlights = new WeakMap<RenderedConnection, SVGElement>();
 
@@ -66,6 +68,10 @@ export class PathObject implements IPathObject {
       {'class': 'blocklyPath'},
       this.svgRoot,
     );
+  }
+
+  setSelectAsBBox(asBBox: boolean) {
+    this.selectAsBBox = asBBox;
   }
 
   /**
